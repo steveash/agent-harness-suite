@@ -1,0 +1,14 @@
+# Agent Harness Suite — example configuration
+# Copy to config.yaml and customize as needed.
+# Environment variables and .env values override these settings.
+
+log_level: INFO
+results_dir: ./results
+
+claude:
+  enabled: true
+  model: claude-sonnet-4-20250514
+
+copilot:
+  enabled: true
+  model: gpt-4o
