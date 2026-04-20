@@ -27,7 +27,7 @@ class Scenario(ABC):
         """Human-readable description of what this scenario tests."""
 
     @abstractmethod
-    def execute(
+    async def execute(
         self,
         harness: HarnessAdapter,
         repo_url: str,

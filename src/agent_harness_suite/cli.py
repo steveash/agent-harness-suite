@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 import sys
 from pathlib import Path
+from typing import Any
 
 import click
 from rich.console import Console
@@ -77,30 +78,23 @@ def run(ctx: click.Context, repo_url: str, harness: tuple[str, ...], scenario: s
     import asyncio
 
     from agent_harness_suite.harnesses import get_harness
-    from agent_harness_suite.runner import BenchmarkRunner
     from agent_harness_suite.scenarios import get_scenario
-    from agent_harness_suite.types import ScenarioConfig
-
-    runner = BenchmarkRunner()
-    for h in harness:
-        adapter = get_harness(h, settings)
-        runner.register(adapter)
 
     sc = get_scenario(scenario)
-    scenario_cfg = ScenarioConfig(name=sc.name, prompt=sc.description, repo_url=repo_url)
+    exit_code = 0
+    for h in harness:
+        adapter = get_harness(h, settings)
+        console.print(f"[bold]--- {h} ---[/bold]")
+        try:
+            result = asyncio.run(sc.execute(adapter, repo_url, settings))
+        except Exception as exc:
+            console.print(f"[red]Harness '{h}' failed: {exc}[/red]")
+            exit_code = 1
+            continue
+        _render_repo_to_plan(result)
 
-    run_results = asyncio.run(_run_benchmark(runner, [scenario_cfg], list(harness)))
-
-    if not run_results:
-        console.print("[red]No results produced.[/red]")
-        sys.exit(1)
-
-    for result in run_results:
-        console.print(f"\n[bold green]Results for {result.adapter_name}:[/bold green]")
-        console.print(f"  status: {result.status.value}")
-        console.print(f"  wall_clock: {result.metrics.wall_clock_seconds:.2f}s")
-        if result.error_message:
-            console.print(f"  error: {result.error_message}")
+    if exit_code:
+        sys.exit(exit_code)
 
 
 def _get_version() -> str:
@@ -108,13 +102,27 @@ def _get_version() -> str:
     return __version__
 
 
-async def _run_benchmark(runner, scenarios, adapter_names):
-    """Run benchmark scenarios asynchronously."""
-    await runner.setup_all()
-    try:
-        return await runner.run_all(scenarios, adapter_names=adapter_names)
-    finally:
-        await runner.teardown_all()
+def _render_repo_to_plan(result: dict[str, Any]) -> None:
+    """Pretty-print a repo-to-plan scenario result."""
+    feature = result.get("feature") or {}
+    metrics = result.get("metrics") or {}
+    tasks = result.get("tasks") or []
+
+    console.print(f"[bold]Feature:[/bold] {feature.get('title', '(none)')}")
+    rationale = feature.get("rationale", "")
+    if rationale:
+        console.print(f"[dim]{rationale}[/dim]")
+
+    console.print(f"[bold]Tasks:[/bold] {len(tasks)}")
+    for task in tasks:
+        deps = ", ".join(task.get("depends_on") or []) or "-"
+        console.print(f"  {task.get('id')}: {task.get('title')} [dim](deps: {deps})[/dim]")
+
+    console.print(
+        f"[bold]Metrics:[/bold] tokens={metrics.get('total_tokens', 0)} "
+        f"turns={metrics.get('total_turns', 0)} "
+        f"spawned={metrics.get('spawned_agents', 0)}"
+    )
 
 
 def _check_keys(settings: object, fatal: bool = False) -> None:
