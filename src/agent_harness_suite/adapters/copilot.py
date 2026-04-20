@@ -66,7 +66,7 @@ class CopilotAdapter(HarnessAdapter):
                 self._execute(scenario, events, metrics),
                 timeout=scenario.timeout_seconds,
             )
-        except asyncio.TimeoutError:
+        except TimeoutError:
             events.append(LifecycleEvent(kind=EventKind.ERROR, data={"reason": "timeout"}))
             metrics.wall_clock_seconds = time.monotonic() - start
             metrics.errors += 1
