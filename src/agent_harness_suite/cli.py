@@ -77,6 +77,13 @@ def run(ctx: click.Context, repo_url: str, harness: tuple[str, ...], scenario: s
     import asyncio
 
     from agent_harness_suite.harnesses import get_harness
+    from agent_harness_suite.metrics import (
+        BenchmarkReport,
+        default_output_paths,
+        render_summary,
+        write_json,
+        write_text_summary,
+    )
     from agent_harness_suite.runner import BenchmarkRunner
     from agent_harness_suite.scenarios import get_scenario
     from agent_harness_suite.types import ScenarioConfig
@@ -89,18 +96,29 @@ def run(ctx: click.Context, repo_url: str, harness: tuple[str, ...], scenario: s
     sc = get_scenario(scenario)
     scenario_cfg = ScenarioConfig(name=sc.name, prompt=sc.description, repo_url=repo_url)
 
+    report = BenchmarkReport(
+        metadata={
+            "repo_url": repo_url,
+            "scenario": scenario,
+            "harnesses": list(harness),
+        }
+    )
     run_results = asyncio.run(_run_benchmark(runner, [scenario_cfg], list(harness)))
+    for r in run_results:
+        report.add(r)
+    report.finalize()
 
     if not run_results:
         console.print("[red]No results produced.[/red]")
         sys.exit(1)
 
-    for result in run_results:
-        console.print(f"\n[bold green]Results for {result.adapter_name}:[/bold green]")
-        console.print(f"  status: {result.status.value}")
-        console.print(f"  wall_clock: {result.metrics.wall_clock_seconds:.2f}s")
-        if result.error_message:
-            console.print(f"  error: {result.error_message}")
+    render_summary(report, console=console)
+
+    json_path, txt_path = default_output_paths(settings.results_dir, report.started_at)
+    write_json(report, json_path)
+    write_text_summary(report, txt_path)
+    console.print(f"[dim]Wrote results to[/dim] {json_path}")
+    console.print(f"[dim]Wrote summary to[/dim] {txt_path}")
 
 
 def _get_version() -> str:

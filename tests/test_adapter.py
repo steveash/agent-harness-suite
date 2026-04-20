@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import asyncio
 from collections.abc import AsyncIterator
 from typing import Any
 
@@ -19,7 +18,6 @@ from agent_harness_suite.types import (
     RunStatus,
     ScenarioConfig,
 )
-
 
 # ------------------------------------------------------------------
 # Stub adapter for testing

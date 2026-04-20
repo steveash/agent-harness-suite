@@ -4,11 +4,11 @@ from __future__ import annotations
 
 import time
 from dataclasses import dataclass, field
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 
-class EventKind(str, Enum):
+class EventKind(StrEnum):
     """Normalized lifecycle events emitted by any harness adapter."""
 
     RUN_STARTED = "run_started"
@@ -22,7 +22,7 @@ class EventKind(str, Enum):
     RUN_COMPLETED = "run_completed"
 
 
-class RunStatus(str, Enum):
+class RunStatus(StrEnum):
     """Terminal status of a harness run."""
 
     SUCCESS = "success"
