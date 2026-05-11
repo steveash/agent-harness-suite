@@ -1,0 +1,6 @@
+# Smoke benchmark config — verifies the Inspect AI backbone is wired correctly.
+#
+# Run with: ahs run --benchmark smoke --model haiku45
+benchmark: smoke
+model: haiku45
+log_dir: ./results
