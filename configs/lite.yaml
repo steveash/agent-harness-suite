@@ -1,0 +1,14 @@
+# Lite configs — full single-benchmark passes intended to fit on a single host.
+#
+# Profiles are documented references for the CLI flags; the runner does not
+# load YAML directly (yet). Each profile maps 1:1 to an `ahs run ...` invocation.
+
+profiles:
+  # Full Terminal-Bench 2.1 pass (89 tasks) with mini-swe + haiku45.
+  # Target: completes in <8h on a single host.
+  #   ahs run --benchmark tb --model haiku45 --harness mini-swe --log-dir ./results/tb
+  tb:
+    benchmark: tb
+    model: haiku45
+    harness: mini-swe
+    log_dir: ./results/tb

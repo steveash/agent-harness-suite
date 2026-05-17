@@ -12,6 +12,7 @@ license = "MIT"
 dependencies = [
     "inspect-ai>=0.3.220",
     "inspect-harbor>=0.5.1",
+    "harbor>=0.6.6",
     "inspect-swe @ git+https://github.com/meridianlabs-ai/inspect_swe.git@ced0f0e30698f164de9816a25c62f6269d324d8b",
     # Required by inspect-ai's agent bridge to translate Anthropic-format
     # requests inside the bridge proxy, even when routing to a non-Anthropic model.

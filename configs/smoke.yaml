@@ -1,6 +1,25 @@
-# Smoke benchmark config — verifies the Inspect AI backbone is wired correctly.
+# Smoke configs — small/fast runs for verifying wiring end-to-end.
 #
-# Run with: ahs run --benchmark smoke --model haiku45
-benchmark: smoke
-model: haiku45
-log_dir: ./results
+# Profiles are documented references for the CLI flags; the runner does not
+# load YAML directly (yet). Each profile maps 1:1 to an `ahs run ...` invocation.
+
+profiles:
+  # Phase 0 backbone smoke: verifies sandbox + agent bridge + token accounting.
+  #   ahs run --benchmark smoke --model haiku45
+  smoke:
+    benchmark: smoke
+    model: haiku45
+    log_dir: ./results
+
+  # Phase 1 Terminal-Bench smoke: 5 TB 2.1 tasks via mini-swe + haiku45.
+  # Designed to complete in <15 min on a single host.
+  #   ahs run --benchmark tb-smoke --model haiku45 --harness mini-swe
+  #
+  # Override the default n_tasks=5 by passing --task-names (repeatable, glob-aware):
+  #   ahs run --benchmark tb-smoke --model haiku45 --harness mini-swe \
+  #       --task-names hello-world --task-names count-occurrences
+  tb_smoke:
+    benchmark: tb-smoke
+    model: haiku45
+    harness: mini-swe
+    log_dir: ./results
